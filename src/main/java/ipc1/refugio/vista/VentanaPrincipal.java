@@ -88,9 +88,25 @@ public class VentanaPrincipal extends JFrame {
         botonAdoptantes.addActionListener(e ->
         new VentanaAdoptantes(sistema).setVisible(true));
         panelBotones.add(botonAdoptantes);
-        panelBotones.add(crearBotonModulo("Solicitudes"));
-        panelBotones.add(crearBotonModulo("Rescates"));
-        panelBotones.add(crearBotonModulo("Ubicaciones"));
+        
+        JButton botonSolicitudes = new JButton("Solicitudes");
+        botonSolicitudes.setFont(new Font("Arial", Font.PLAIN, 14));
+        botonSolicitudes.addActionListener(e ->
+        new VentanaSolicitudes(sistema).setVisible(true));
+        panelBotones.add(botonSolicitudes);
+        
+        JButton botonRescates = new JButton("Rescates");
+        botonRescates.setFont(new Font("Arial", Font.PLAIN, 14));
+        botonRescates.addActionListener(e ->
+        new VentanaRescates(sistema).setVisible(true));
+        panelBotones.add(botonRescates);
+        
+        JButton botonUbicaciones = new JButton("Ubicaciones");
+        botonUbicaciones.setFont(new Font("Arial", Font.PLAIN, 14));
+        botonUbicaciones.addActionListener(e ->
+        new VentanaUbicaciones(sistema).setVisible(true));
+        panelBotones.add(botonUbicaciones);
+        
         panelBotones.add(crearBotonModulo("Reportes"));
         panelBotones.add(crearBotonModulo("Datos del Estudiante"));
         panelBotones.add(crearBotonCerrarSesion());
