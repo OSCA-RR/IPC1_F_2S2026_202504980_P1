@@ -113,7 +113,12 @@ public class VentanaPrincipal extends JFrame {
         new VentanaReportes(sistema).setVisible(true));
         panelBotones.add(botonReportes);
         
-        panelBotones.add(crearBotonModulo("Datos del Estudiante"));
+        JButton botonDatos = new JButton("Datos del Estudiante");
+        botonDatos.setFont(new Font("Arial", Font.PLAIN, 14));
+        botonDatos.addActionListener(e ->
+        new VentanaDatosEstudiante().setVisible(true));
+        panelBotones.add(botonDatos);
+        
         panelBotones.add(crearBotonCerrarSesion());
 
         add(panelBotones, BorderLayout.CENTER);
