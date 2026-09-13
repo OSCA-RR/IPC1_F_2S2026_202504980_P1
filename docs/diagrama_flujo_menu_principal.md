@@ -1,5 +1,6 @@
+```mermaid
 flowchart TD
-    A([Inicio]) --> B["Abrir VentanaLogin"]
+    A([Inicio]) --> B["Abrir Ventana Login"]
     B --> C{"Credenciales validas?"}
     C -->|No| D["Mostrar error"]
     D --> B
@@ -15,3 +16,4 @@ flowchart TD
     F --> N["Cerrar Sesion"]
     N --> O["Guardar datos"]
     O --> B
+```
