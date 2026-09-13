@@ -1,3 +1,4 @@
+```mermaid
 classDiagram
     class SistemaRefugio {
         -Usuario[] usuarios
@@ -70,3 +71,5 @@ classDiagram
     SistemaRefugio --> EspacioRefugio
     SistemaRefugio --> Usuario
     SistemaRefugio --> Bitacora
+``` 
+    

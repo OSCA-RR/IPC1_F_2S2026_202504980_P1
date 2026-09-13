@@ -1,3 +1,4 @@
+```mermaid
 flowchart LR
     subgraph Matriz [Matriz de Espacios 5x10]
         direction TB
@@ -24,3 +25,4 @@ flowchart LR
 
     Matriz --> R1[Actualizar Vista]
     Matriz --> R2[Guardar en espacios.csv]
+```

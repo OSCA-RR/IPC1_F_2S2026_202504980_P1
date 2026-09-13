@@ -1,3 +1,4 @@
+```mermaid
 flowchart TB
     subgraph Vista [Capa de Vista - Swing]
         V1[VentanaLogin]
@@ -56,3 +57,4 @@ flowchart TB
     S1 --> M7
     S1 --> P1
     R1 --> S1
+```
