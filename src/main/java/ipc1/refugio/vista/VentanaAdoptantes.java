@@ -2,30 +2,20 @@ package ipc1.refugio.vista;
 
 import ipc1.refugio.modelo.Adoptante;
 import ipc1.refugio.servicios.SistemaRefugio;
+import ipc1.refugio.utilidades.TextoLimitado;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-/**
- * Ventana del modulo de adoptantes.
- *
- * Permite:
- *  - Registrar un adoptante nuevo con validacion de DPI unico.
- *  - Buscar por codigo, nombre o DPI.
- *  - Ver el listado en una tabla.
- *  - Editar los datos de contacto de un adoptante.
- *  - Desactivar (eliminacion logica) un adoptante.
- *
- * Cada accion importante queda registrada en la bitacora.
- */
+// Ventana del modulo de adoptantes.
+// Permite registrar, buscar, editar y desactivar (eliminacion logica) adoptantes.
+// Cada accion importante queda registrada en la bitacora.
 public class VentanaAdoptantes extends JFrame {
 
-    private final SistemaRefugio sistema;
+    private final SistemaRefugio sistema;  // referencia al sistema compartido
 
-    // ============================================================
-    // COMPONENTES DEL FORMULARIO
-    // ============================================================
+    // Componentes del formulario de registro
     private JTextField campoCodigo;
     private JTextField campoNombre;
     private JTextField campoDpi;
@@ -33,34 +23,28 @@ public class VentanaAdoptantes extends JFrame {
     private JTextField campoDireccion;
     private JTextField campoCorreo;
 
-    // ============================================================
-    // COMPONENTES DE LA TABLA Y BUSQUEDA
-    // ============================================================
+    // Componentes de la tabla y la busqueda
     private JTable tabla;
     private AdoptanteTableModel modeloTabla;
 
     private JComboBox<String> comboBusqueda;
     private JTextField campoBusqueda;
 
-    // ============================================================
-    // CONSTRUCTOR
-    // ============================================================
     public VentanaAdoptantes(SistemaRefugio sistema) {
         this.sistema = sistema;
 
         setTitle("Modulo de Adoptantes");
         setSize(950, 600);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);   // solo cierra esta ventana
         setLayout(new BorderLayout());
 
         inicializarComponentes();
-        refrescarTabla();
+        refrescarTabla();   // carga los adoptantes al abrir
     }
 
-    // ============================================================
-    // CONSTRUCCION DE LA INTERFAZ
-    // ============================================================
+    // Construye toda la interfaz: formulario arriba, tabla al centro,
+    // busqueda y acciones abajo.
     private void inicializarComponentes() {
 
         // ---------- Formulario de registro ----------
@@ -77,12 +61,14 @@ public class VentanaAdoptantes extends JFrame {
         panelFormulario.add(new JLabel("Codigo:"), gbc);
         gbc.gridx = 1;
         campoCodigo = new JTextField(10);
+        campoCodigo.setDocument(new TextoLimitado(10));
         panelFormulario.add(campoCodigo, gbc);
 
         gbc.gridx = 2;
         panelFormulario.add(new JLabel("Nombre completo:"), gbc);
         gbc.gridx = 3;
         campoNombre = new JTextField(20);
+        campoNombre.setDocument(new TextoLimitado(60));
         panelFormulario.add(campoNombre, gbc);
 
         // Fila 2: DPI y telefono
@@ -90,12 +76,14 @@ public class VentanaAdoptantes extends JFrame {
         panelFormulario.add(new JLabel("DPI:"), gbc);
         gbc.gridx = 1;
         campoDpi = new JTextField(15);
+        campoDpi.setDocument(new TextoLimitado(13));   // DPI exacto de 13 digitos
         panelFormulario.add(campoDpi, gbc);
 
         gbc.gridx = 2;
         panelFormulario.add(new JLabel("Telefono:"), gbc);
         gbc.gridx = 3;
         campoTelefono = new JTextField(15);
+        campoTelefono.setDocument(new TextoLimitado(15));
         panelFormulario.add(campoTelefono, gbc);
 
         // Fila 3: direccion y correo
@@ -103,12 +91,14 @@ public class VentanaAdoptantes extends JFrame {
         panelFormulario.add(new JLabel("Direccion:"), gbc);
         gbc.gridx = 1;
         campoDireccion = new JTextField(20);
+        campoDireccion.setDocument(new TextoLimitado(100));
         panelFormulario.add(campoDireccion, gbc);
 
         gbc.gridx = 2;
         panelFormulario.add(new JLabel("Correo:"), gbc);
         gbc.gridx = 3;
         campoCorreo = new JTextField(20);
+        campoCorreo.setDocument(new TextoLimitado(60));
         panelFormulario.add(campoCorreo, gbc);
 
         // Fila 4: botones del formulario
@@ -178,14 +168,10 @@ public class VentanaAdoptantes extends JFrame {
         add(panelSur, BorderLayout.SOUTH);
     }
 
-    // ============================================================
-    // ACCIONES
-    // ============================================================
+    // ---------- ACCIONES ----------
 
-    /**
-     * Registra un adoptante nuevo validando campos vacios, DPI/codigo
-     * duplicado y formato minimo del correo.
-     */
+    // Registra un adoptante nuevo. Valida campos vacios, DPI valido,
+    // correo valido, codigo y DPI duplicados.
     private void registrarAdoptante() {
         String codigo = campoCodigo.getText().trim();
         String nombre = campoNombre.getText().trim();
@@ -194,7 +180,7 @@ public class VentanaAdoptantes extends JFrame {
         String direccion = campoDireccion.getText().trim();
         String correo = campoCorreo.getText().trim();
 
-        // Validacion: campos vacios.
+        // Validacion: campos vacios
         if (codigo.isEmpty() || nombre.isEmpty() || dpi.isEmpty()
                 || telefono.isEmpty() || direccion.isEmpty() || correo.isEmpty()) {
             JOptionPane.showMessageDialog(this,
@@ -203,15 +189,15 @@ public class VentanaAdoptantes extends JFrame {
             return;
         }
 
-        // Validacion: DPI debe tener solo digitos y al menos 13 caracteres.
-        if (!dpi.matches("\\d{13,}")) {
+        // Validacion: DPI debe tener exactamente 13 digitos
+        if (!dpi.matches("\\d{13}")) {
             JOptionPane.showMessageDialog(this,
                     "El DPI debe contener solo digitos (13 o mas).",
                     "DPI invalido", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Validacion: correo debe tener formato basico usuario@dominio.
+        // Validacion: correo con formato usuario@dominio.ext
         if (!correo.matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,}$")) {
             JOptionPane.showMessageDialog(this,
                     "El correo no tiene un formato valido.",
@@ -219,7 +205,7 @@ public class VentanaAdoptantes extends JFrame {
             return;
         }
 
-        // Validacion: codigo duplicado.
+        // Validacion: codigo duplicado
         if (sistema.existeAdoptanteConCodigo(codigo)) {
             JOptionPane.showMessageDialog(this,
                     "Ya existe un adoptante con el codigo '" + codigo + "'.",
@@ -227,7 +213,7 @@ public class VentanaAdoptantes extends JFrame {
             return;
         }
 
-        // Validacion: DPI duplicado.
+        // Validacion: DPI duplicado
         if (sistema.existeAdoptanteConDpi(dpi)) {
             JOptionPane.showMessageDialog(this,
                     "Ya existe un adoptante con el DPI '" + dpi + "'.",
@@ -235,7 +221,7 @@ public class VentanaAdoptantes extends JFrame {
             return;
         }
 
-        // Creamos el objeto y lo agregamos al sistema.
+        // Creamos el objeto y lo agregamos al sistema
         Adoptante a = new Adoptante(codigo, nombre, dpi, telefono, direccion, correo);
 
         if (!sistema.agregarAdoptante(a)) {
@@ -245,7 +231,6 @@ public class VentanaAdoptantes extends JFrame {
             return;
         }
 
-        // Registro en bitacora.
         sistema.registrarBitacora("ADOPTANTE_REGISTRADO",
                 "Se registro el adoptante " + codigo + " (" + nombre + ")");
 
@@ -257,9 +242,7 @@ public class VentanaAdoptantes extends JFrame {
         refrescarTabla();
     }
 
-    /**
-     * Limpia los campos del formulario.
-     */
+    // Limpia los campos del formulario
     private void limpiarFormulario() {
         campoCodigo.setText("");
         campoNombre.setText("");
@@ -270,16 +253,12 @@ public class VentanaAdoptantes extends JFrame {
         campoCodigo.requestFocus();
     }
 
-    /**
-     * Refresca la tabla con todos los adoptantes activos.
-     */
+    // Refresca la tabla con todos los adoptantes activos
     private void refrescarTabla() {
         modeloTabla.actualizar(sistema.getAdoptantesActivos());
     }
 
-    /**
-     * Busca segun el criterio seleccionado.
-     */
+    // Busca segun el criterio seleccionado en el combo
     private void buscar() {
         String texto = campoBusqueda.getText().trim();
         if (texto.isEmpty()) {
@@ -315,11 +294,9 @@ public class VentanaAdoptantes extends JFrame {
         }
     }
 
-    /**
-     * Busqueda auxiliar por nombre parcial. Se implementa aqui porque el
-     * SistemaRefugio no tiene un metodo especifico para adoptantes por
-     * nombre (solo por codigo y DPI).
-     */
+    // Busqueda auxiliar por nombre parcial.
+    // Se hace aqui porque SistemaRefugio no tiene un metodo especifico
+    // para adoptantes por nombre (solo por codigo y DPI).
     private Adoptante[] buscarAdoptantesPorNombre(String nombre) {
         Adoptante[] resultado = new Adoptante[SistemaRefugio.MAX_ADOPTANTES];
         int k = 0;
@@ -334,10 +311,8 @@ public class VentanaAdoptantes extends JFrame {
         return resultado;
     }
 
-    /**
-     * Edita los datos de contacto del adoptante seleccionado.
-     * No permite cambiar el codigo ni el DPI.
-     */
+    // Edita los datos de contacto del adoptante seleccionado.
+    // No se puede cambiar el codigo ni el DPI (son llaves unicas).
     private void editarAdoptante() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {
@@ -349,7 +324,7 @@ public class VentanaAdoptantes extends JFrame {
 
         Adoptante a = modeloTabla.getAdoptanteEnFila(fila);
 
-        // Pedimos los nuevos datos con cuadros de dialogo.
+        // Pedimos los nuevos datos uno por uno
         String nuevoNombre = JOptionPane.showInputDialog(this,
                 "Nombre:", a.getNombre());
         if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) return;
@@ -366,7 +341,7 @@ public class VentanaAdoptantes extends JFrame {
                 "Correo:", a.getCorreo());
         if (nuevoCorreo == null || nuevoCorreo.trim().isEmpty()) return;
 
-        // Validamos el correo.
+        // Validamos el correo nuevo
         if (!nuevoCorreo.matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,}$")) {
             JOptionPane.showMessageDialog(this,
                     "El correo no tiene un formato valido.",
@@ -391,9 +366,8 @@ public class VentanaAdoptantes extends JFrame {
         }
     }
 
-    /**
-     * Desactiva (eliminacion logica) el adoptante seleccionado.
-     */
+    // Desactiva (eliminacion logica) el adoptante seleccionado.
+    // No se borra del arreglo, solo se marca activo = false.
     private void desactivarAdoptante() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {

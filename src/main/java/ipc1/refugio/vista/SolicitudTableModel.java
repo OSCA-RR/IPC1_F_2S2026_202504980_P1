@@ -3,31 +3,26 @@ package ipc1.refugio.vista;
 import ipc1.refugio.modelo.Solicitud;
 import javax.swing.table.AbstractTableModel;
 
-/**
- * Modelo de tabla personalizado para mostrar solicitudes en un JTable.
- *
- * Se construye manualmente (sin DefaultTableModel) para no usar
- * colecciones dinamicas. Trabaja directamente con un arreglo de Solicitud.
- */
+// Modelo de tabla para mostrar solicitudes en un JTable.
+// Se hace a mano (sin DefaultTableModel) para no usar colecciones
+// y trabajar directo sobre el arreglo de solicitudes.
 public class SolicitudTableModel extends AbstractTableModel {
 
-    // Columnas que se muestran.
+    // Nombres de las columnas que se muestran
     private final String[] columnas = {
         "Codigo", "Fecha", "Animal", "Adoptante", "Estado", "Observaciones"
     };
 
-    private Solicitud[] solicitudes;
-    private int cantidad;
+    private Solicitud[] solicitudes;  // arreglo que se esta mostrando
+    private int cantidad;             // cuantos elementos no nulos hay
 
     public SolicitudTableModel() {
         this.solicitudes = new Solicitud[0];
         this.cantidad = 0;
     }
 
-    /**
-     * Reemplaza los datos de la tabla con un nuevo arreglo de solicitudes.
-     * Cuenta cuantos elementos no nulos hay al inicio del arreglo.
-     */
+    // Reemplaza los datos actuales por un nuevo arreglo.
+    // Cuenta cuantos no son nulos para saber cuantas filas dibujar.
     public void actualizar(Solicitud[] solicitudes) {
         this.solicitudes = solicitudes;
         this.cantidad = 0;
@@ -35,10 +30,10 @@ public class SolicitudTableModel extends AbstractTableModel {
             if (solicitudes[i] != null) {
                 cantidad++;
             } else {
-                break;
+                break;   // los datos estan al inicio del arreglo
             }
         }
-        fireTableDataChanged();
+        fireTableDataChanged();   // avisa al JTable que se repinte
     }
 
     @Override
@@ -56,6 +51,7 @@ public class SolicitudTableModel extends AbstractTableModel {
         return columnas[col];
     }
 
+    // Devuelve el valor de cada celda segun la columna
     @Override
     public Object getValueAt(int fila, int col) {
         Solicitud s = solicitudes[fila];
@@ -70,15 +66,13 @@ public class SolicitudTableModel extends AbstractTableModel {
         }
     }
 
+    // Las celdas no se editan directo, los cambios se hacen con botones
     @Override
     public boolean isCellEditable(int fila, int col) {
         return false;
     }
 
-    /**
-     * Devuelve la solicitud de una fila, util para saber cual esta
-     * seleccionada.
-     */
+    // Devuelve la solicitud de una fila. Sirve para saber cual esta seleccionada.
     public Solicitud getSolicitudEnFila(int fila) {
         if (fila < 0 || fila >= cantidad) return null;
         return solicitudes[fila];

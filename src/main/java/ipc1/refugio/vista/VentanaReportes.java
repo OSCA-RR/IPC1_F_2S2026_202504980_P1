@@ -8,23 +8,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
-/**
- * Ventana del modulo de reportes.
- *
- * Permite generar cuatro reportes HTML:
- *  - Reporte de animales.
- *  - Reporte de adopciones.
- *  - Reporte de ocupacion del refugio.
- *  - Bitacora de acciones.
- *
- * Cada boton genera el reporte correspondiente y ofrece abrirlo en el
- * navegador por defecto del sistema.
- */
+// Ventana del modulo de reportes.
+// Permite generar 4 reportes HTML: animales, adopciones, ocupacion y bitacora.
+// Despues de generar, ofrece abrir el archivo en el navegador.
 public class VentanaReportes extends JFrame {
 
-    private final SistemaRefugio sistema;
+    private final SistemaRefugio sistema;  // referencia al sistema compartido
 
-    // Etiqueta de estado para mostrar el ultimo reporte generado.
+    // Etiqueta inferior que muestra el ultimo reporte generado
     private JLabel etiquetaEstado;
 
     public VentanaReportes(SistemaRefugio sistema) {
@@ -33,15 +24,17 @@ public class VentanaReportes extends JFrame {
         setTitle("Modulo de Reportes");
         setSize(650, 450);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);   // solo cierra esta ventana
         setLayout(new BorderLayout());
 
         inicializarComponentes();
     }
 
+    // Construye la interfaz: titulo arriba, botones al centro,
+    // estado y volver abajo.
     private void inicializarComponentes() {
 
-        // -------- Encabezado --------
+        // ---------- Encabezado ----------
         JLabel encabezado = new JLabel(
                 "Generacion de Reportes HTML",
                 SwingConstants.CENTER);
@@ -49,7 +42,7 @@ public class VentanaReportes extends JFrame {
         encabezado.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         add(encabezado, BorderLayout.NORTH);
 
-        // -------- Panel con botones --------
+        // ---------- Botones de reportes ----------
         JPanel panelBotones = new JPanel(new GridLayout(4, 1, 10, 10));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
 
@@ -70,7 +63,7 @@ public class VentanaReportes extends JFrame {
 
         add(panelBotones, BorderLayout.CENTER);
 
-        // -------- Panel inferior: estado + volver --------
+        // ---------- Panel inferior: estado y boton volver ----------
         JPanel panelSur = new JPanel(new BorderLayout());
 
         etiquetaEstado = new JLabel(" Listo. Seleccione un reporte para generar.");
@@ -84,7 +77,7 @@ public class VentanaReportes extends JFrame {
 
         add(panelSur, BorderLayout.SOUTH);
 
-        // -------- Eventos --------
+        // ---------- Eventos de los botones ----------
         botonAnimales.addActionListener((ActionEvent e) -> generar(
                 "Reporte de animales",
                 GeneradorReportes.generarReporteAnimales(sistema)));
@@ -104,9 +97,7 @@ public class VentanaReportes extends JFrame {
         botonVolver.addActionListener((ActionEvent e) -> dispose());
     }
 
-    /**
-     * Muestra el resultado de la generacion y ofrece abrir el archivo.
-     */
+    // Muestra el resultado de la generacion y ofrece abrir el archivo
     private void generar(String nombreReporte, String ruta) {
         if (ruta == null) {
             etiquetaEstado.setText(" Error al generar el " + nombreReporte + ".");
@@ -118,6 +109,7 @@ public class VentanaReportes extends JFrame {
 
         etiquetaEstado.setText(" Generado: " + ruta);
 
+        // Registramos el reporte generado en la bitacora
         sistema.registrarBitacora("REPORTE_GENERADO",
                 "Se genero el " + nombreReporte + " en " + ruta);
 
@@ -131,10 +123,7 @@ public class VentanaReportes extends JFrame {
         }
     }
 
-    /**
-     * Abre el archivo HTML en el navegador por defecto del sistema.
-     * Usa Desktop.browse para ser multiplataforma.
-     */
+    // Abre el archivo HTML en el navegador por defecto del sistema
     private void abrirEnNavegador(String ruta) {
         try {
             File archivo = new File(ruta);

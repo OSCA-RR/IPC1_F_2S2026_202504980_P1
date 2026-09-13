@@ -3,31 +3,26 @@ package ipc1.refugio.vista;
 import ipc1.refugio.modelo.Rescate;
 import javax.swing.table.AbstractTableModel;
 
-/**
- * Modelo de tabla personalizado para mostrar rescates en un JTable.
- *
- * Se construye manualmente (sin DefaultTableModel) para no usar
- * colecciones dinamicas. Trabaja directamente con un arreglo de Rescate.
- */
+// Modelo de tabla para mostrar rescates en un JTable.
+// Se hace a mano (sin DefaultTableModel) para no usar colecciones
+// y trabajar directo sobre el arreglo de rescates.
 public class RescateTableModel extends AbstractTableModel {
 
-    // Columnas que se muestran.
+    // Nombres de las columnas que se muestran
     private final String[] columnas = {
         "Codigo", "Fecha", "Ubicacion", "Descripcion", "Prioridad", "Estado"
     };
 
-    private Rescate[] rescates;
-    private int cantidad;
+    private Rescate[] rescates;  // arreglo que se esta mostrando
+    private int cantidad;        // cuantos elementos no nulos hay
 
     public RescateTableModel() {
         this.rescates = new Rescate[0];
         this.cantidad = 0;
     }
 
-    /**
-     * Reemplaza los datos de la tabla con un nuevo arreglo de rescates.
-     * Cuenta cuantos elementos no nulos hay al inicio del arreglo.
-     */
+    // Reemplaza los datos actuales por un nuevo arreglo.
+    // Cuenta cuantos no son nulos para saber cuantas filas dibujar.
     public void actualizar(Rescate[] rescates) {
         this.rescates = rescates;
         this.cantidad = 0;
@@ -35,10 +30,10 @@ public class RescateTableModel extends AbstractTableModel {
             if (rescates[i] != null) {
                 cantidad++;
             } else {
-                break;
+                break;   // los datos estan al inicio del arreglo
             }
         }
-        fireTableDataChanged();
+        fireTableDataChanged();   // avisa al JTable que se repinte
     }
 
     @Override
@@ -56,6 +51,7 @@ public class RescateTableModel extends AbstractTableModel {
         return columnas[col];
     }
 
+    // Devuelve el valor de cada celda segun la columna
     @Override
     public Object getValueAt(int fila, int col) {
         Rescate r = rescates[fila];
@@ -70,15 +66,13 @@ public class RescateTableModel extends AbstractTableModel {
         }
     }
 
+    // Las celdas no se editan directo, los cambios se hacen con botones
     @Override
     public boolean isCellEditable(int fila, int col) {
         return false;
     }
 
-    /**
-     * Devuelve el rescate de la fila indicada, util para saber cual
-     * esta seleccionado.
-     */
+    // Devuelve el rescate de una fila. Sirve para saber cual esta seleccionado.
     public Rescate getRescateEnFila(int fila) {
         if (fila < 0 || fila >= cantidad) return null;
         return rescates[fila];

@@ -3,37 +3,27 @@ package ipc1.refugio.vista;
 import ipc1.refugio.modelo.Animal;
 import javax.swing.table.AbstractTableModel;
 
-/**
- * Modelo de tabla personalizado para mostrar animales en un JTable.
- *
- * Se construye manualmente (sin DefaultTableModel) para cumplir con la
- * restriccion de no usar colecciones dinamicas. El modelo trabaja
- * directamente sobre un arreglo de Animal.
- */
+// Modelo de tabla para mostrar animales en un JTable.
+// Se hace a mano (sin DefaultTableModel) para no usar colecciones
+// y para trabajar directo sobre el arreglo de animales.
 public class AnimalTableModel extends AbstractTableModel {
 
-    // Nombres de las columnas que se mostraran en la tabla.
+    // Nombres de las columnas que se muestran
     private final String[] columnas = {
         "Codigo", "Nombre", "Especie", "Raza", "Sexo",
         "Edad (meses)", "Estado Clinico", "Estado Adopcion", "Ubicacion"
     };
 
-    // Arreglo con los animales que se estan mostrando actualmente.
-    // Puede venir del sistema o de una busqueda filtrada.
-    private Animal[] animales;
-
-    // Cantidad de elementos no nulos al inicio del arreglo.
-    private int cantidad;
+    private Animal[] animales;  // arreglo que se esta mostrando
+    private int cantidad;       // cuantos elementos no nulos hay
 
     public AnimalTableModel() {
         this.animales = new Animal[0];
         this.cantidad = 0;
     }
 
-    /**
-     * Reemplaza los datos de la tabla con un nuevo arreglo de animales.
-     * Cuenta cuantos elementos no nulos hay para saber cuantas filas pintar.
-     */
+    // Reemplaza los datos actuales por un nuevo arreglo.
+    // Cuenta cuantos no son nulos para saber cuantas filas dibujar.
     public void actualizar(Animal[] animales) {
         this.animales = animales;
         this.cantidad = 0;
@@ -41,11 +31,10 @@ public class AnimalTableModel extends AbstractTableModel {
             if (animales[i] != null) {
                 cantidad++;
             } else {
-                break; // Los arreglos del sistema tienen los datos al inicio.
+                break;   // los datos estan al inicio del arreglo
             }
         }
-        // Notifica al JTable que los datos cambiaron y debe repintarse.
-        fireTableDataChanged();
+        fireTableDataChanged();   // avisa al JTable que se repinte
     }
 
     @Override
@@ -63,10 +52,8 @@ public class AnimalTableModel extends AbstractTableModel {
         return columnas[col];
     }
 
-    /**
-     * Devuelve el valor de una celda especifica.
-     * El switch mapea cada columna al campo correspondiente del Animal.
-     */
+    // Devuelve el valor de cada celda segun la columna.
+    // El switch mapea cada columna al campo correspondiente del Animal.
     @Override
     public Object getValueAt(int fila, int col) {
         Animal a = animales[fila];
@@ -81,6 +68,7 @@ public class AnimalTableModel extends AbstractTableModel {
             case 7: return a.getEstadoAdopcion();
             case 8:
                 // Si tiene area y jaula asignadas, se muestra la ubicacion.
+                // Si no, se muestra "Sin asignar".
                 if (a.getArea() >= 0 && a.getJaula() >= 0) {
                     return "Area " + a.getArea() + " - Jaula " + a.getJaula();
                 }
@@ -90,19 +78,13 @@ public class AnimalTableModel extends AbstractTableModel {
         }
     }
 
-    /**
-     * Las celdas no son editables directamente, la edicion se hace
-     * mediante los botones de la ventana.
-     */
+    // Las celdas no se editan directo, los cambios se hacen con botones
     @Override
     public boolean isCellEditable(int fila, int col) {
         return false;
     }
 
-    /**
-     * Devuelve el Animal correspondiente a una fila de la tabla.
-     * Util para saber que animal esta seleccionado.
-     */
+    // Devuelve el animal de una fila. Sirve para saber cual esta seleccionado.
     public Animal getAnimalEnFila(int fila) {
         if (fila < 0 || fila >= cantidad) return null;
         return animales[fila];

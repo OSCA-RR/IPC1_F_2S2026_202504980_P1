@@ -3,33 +3,26 @@ package ipc1.refugio.vista;
 import ipc1.refugio.modelo.Adoptante;
 import javax.swing.table.AbstractTableModel;
 
-/**
- * Modelo de tabla personalizado para mostrar adoptantes en un JTable.
- *
- * Se construye manualmente (sin DefaultTableModel) para cumplir con la
- * restriccion de no usar colecciones dinamicas.
- */
+// Modelo de tabla para mostrar adoptantes en un JTable.
+// Se hace a mano (sin DefaultTableModel) para no usar colecciones
+// y para tener control directo sobre el arreglo de adoptantes.
 public class AdoptanteTableModel extends AbstractTableModel {
 
-    // Nombres de las columnas que se mostraran.
+    // Nombres de las columnas que se muestran
     private final String[] columnas = {
         "Codigo", "Nombre", "DPI", "Telefono", "Direccion", "Correo"
     };
 
-    // Arreglo de adoptantes que se estan mostrando actualmente.
-    private Adoptante[] adoptantes;
-
-    // Cantidad de elementos no nulos al inicio del arreglo.
-    private int cantidad;
+    private Adoptante[] adoptantes;  // arreglo que se esta mostrando
+    private int cantidad;            // cuantos elementos no nulos hay
 
     public AdoptanteTableModel() {
         this.adoptantes = new Adoptante[0];
         this.cantidad = 0;
     }
 
-    /**
-     * Reemplaza los datos de la tabla con un nuevo arreglo de adoptantes.
-     */
+    // Reemplaza los datos actuales por un nuevo arreglo.
+    // Cuenta cuantos no son nulos para saber cuantas filas dibujar.
     public void actualizar(Adoptante[] adoptantes) {
         this.adoptantes = adoptantes;
         this.cantidad = 0;
@@ -37,10 +30,10 @@ public class AdoptanteTableModel extends AbstractTableModel {
             if (adoptantes[i] != null) {
                 cantidad++;
             } else {
-                break;
+                break;   // los datos estan al inicio
             }
         }
-        fireTableDataChanged();
+        fireTableDataChanged();   // avisa al JTable que se repinte
     }
 
     @Override
@@ -58,6 +51,7 @@ public class AdoptanteTableModel extends AbstractTableModel {
         return columnas[col];
     }
 
+    // Devuelve el valor de cada celda segun la columna
     @Override
     public Object getValueAt(int fila, int col) {
         Adoptante a = adoptantes[fila];
@@ -72,15 +66,13 @@ public class AdoptanteTableModel extends AbstractTableModel {
         }
     }
 
+    // Las celdas no se editan directo, los cambios se hacen con botones
     @Override
     public boolean isCellEditable(int fila, int col) {
         return false;
     }
 
-    /**
-     * Devuelve el Adoptante de la fila indicada, util para saber cual
-     * esta seleccionado.
-     */
+    // Devuelve el adoptante de una fila. Sirve para saber cual esta seleccionado.
     public Adoptante getAdoptanteEnFila(int fila) {
         if (fila < 0 || fila >= cantidad) return null;
         return adoptantes[fila];

@@ -2,31 +2,20 @@ package ipc1.refugio.vista;
 
 import ipc1.refugio.modelo.Animal;
 import ipc1.refugio.servicios.SistemaRefugio;
+import ipc1.refugio.utilidades.TextoLimitado;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-/**
- * Ventana del modulo de animales.
- *
- * Permite:
- *  - Registrar un animal nuevo.
- *  - Buscar por codigo, nombre, especie o estado de adopcion.
- *  - Ver los animales en una tabla.
- *  - Editar el estado clinico y de adopcion.
- *  - Eliminar logicamente un animal.
- *
- * Toda accion queda registrada en la bitacora del sistema.
- */
+// Ventana del modulo de animales.
+// Permite registrar, buscar, editar estado y eliminar logicamente.
+// Cada accion importante queda registrada en la bitacora.
 public class VentanaAnimales extends JFrame {
 
-    // Referencia al sistema compartido.
-    private final SistemaRefugio sistema;
+    private final SistemaRefugio sistema;  // referencia al sistema compartido
 
-    // ============================================================
-    // COMPONENTES DEL FORMULARIO DE REGISTRO
-    // ============================================================
+    // Componentes del formulario de registro
     private JTextField campoCodigo;
     private JTextField campoNombre;
     private JComboBox<String> comboEspecie;
@@ -36,38 +25,32 @@ public class VentanaAnimales extends JFrame {
     private JComboBox<String> comboEstadoClinico;
     private JComboBox<String> comboEstadoAdopcion;
 
-    // ============================================================
-    // COMPONENTES DE LA TABLA Y BUSQUEDA
-    // ============================================================
+    // Componentes de la tabla y la busqueda
     private JTable tabla;
     private AnimalTableModel modeloTabla;
 
     private JComboBox<String> comboBusqueda;
     private JTextField campoBusqueda;
 
-    // ============================================================
-    // CONSTRUCTOR
-    // ============================================================
     public VentanaAnimales(SistemaRefugio sistema) {
         this.sistema = sistema;
 
         setTitle("Modulo de Animales");
         setSize(1000, 650);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE); // Solo cierra esta ventana.
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);   // solo cierra esta ventana
         setLayout(new BorderLayout());
 
         inicializarComponentes();
         registrarEventos();
-        refrescarTabla(); // Carga los animales al abrir la ventana.
+        refrescarTabla();   // carga los animales al abrir
     }
 
-    // ============================================================
-    // CONSTRUCCION DE LA INTERFAZ
-    // ============================================================
+    // Construye la interfaz: formulario arriba, tabla al centro,
+    // busqueda y acciones abajo.
     private void inicializarComponentes() {
 
-        // ---------- Formulario de registro (parte superior) ----------
+        // ---------- Formulario de registro ----------
         JPanel panelFormulario = new JPanel(new GridBagLayout());
         panelFormulario.setBorder(BorderFactory.createTitledBorder(
                 "Registrar nuevo animal"));
@@ -76,20 +59,22 @@ public class VentanaAnimales extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Fila 1: Codigo y Nombre
+        // Fila 1: codigo y nombre
         gbc.gridx = 0; gbc.gridy = 0;
         panelFormulario.add(new JLabel("Codigo:"), gbc);
         gbc.gridx = 1;
         campoCodigo = new JTextField(10);
+        campoCodigo.setDocument(new TextoLimitado(10));
         panelFormulario.add(campoCodigo, gbc);
 
         gbc.gridx = 2;
         panelFormulario.add(new JLabel("Nombre:"), gbc);
         gbc.gridx = 3;
         campoNombre = new JTextField(15);
+        campoNombre.setDocument(new TextoLimitado(60));
         panelFormulario.add(campoNombre, gbc);
 
-        // Fila 2: Especie y Raza
+        // Fila 2: especie y raza
         gbc.gridx = 0; gbc.gridy = 1;
         panelFormulario.add(new JLabel("Especie:"), gbc);
         gbc.gridx = 1;
@@ -100,9 +85,10 @@ public class VentanaAnimales extends JFrame {
         panelFormulario.add(new JLabel("Raza:"), gbc);
         gbc.gridx = 3;
         campoRaza = new JTextField(15);
+        campoRaza.setDocument(new TextoLimitado(40));
         panelFormulario.add(campoRaza, gbc);
 
-        // Fila 3: Sexo y Edad
+        // Fila 3: sexo y edad
         gbc.gridx = 0; gbc.gridy = 2;
         panelFormulario.add(new JLabel("Sexo:"), gbc);
         gbc.gridx = 1;
@@ -113,9 +99,10 @@ public class VentanaAnimales extends JFrame {
         panelFormulario.add(new JLabel("Edad estimada (meses):"), gbc);
         gbc.gridx = 3;
         campoEdad = new JTextField(10);
+        campoEdad.setDocument(new TextoLimitado(3));
         panelFormulario.add(campoEdad, gbc);
 
-        // Fila 4: Estado clinico y estado de adopcion
+        // Fila 4: estado clinico y estado de adopcion
         gbc.gridx = 0; gbc.gridy = 3;
         panelFormulario.add(new JLabel("Estado clinico:"), gbc);
         gbc.gridx = 1;
@@ -130,7 +117,7 @@ public class VentanaAnimales extends JFrame {
                 new String[]{"Disponible", "En proceso", "Adoptado", "No apto"});
         panelFormulario.add(comboEstadoAdopcion, gbc);
 
-        // Fila 5: Botones del formulario
+        // Fila 5: botones del formulario
         JPanel panelBotonesFormulario = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         JButton botonRegistrar = new JButton("Registrar");
         JButton botonLimpiar = new JButton("Limpiar");
@@ -141,13 +128,12 @@ public class VentanaAnimales extends JFrame {
         gbc.gridwidth = 4;
         panelFormulario.add(panelBotonesFormulario, gbc);
 
-        // Conectamos los botones del formulario.
         botonRegistrar.addActionListener((ActionEvent e) -> registrarAnimal());
         botonLimpiar.addActionListener((ActionEvent e) -> limpiarFormulario());
 
         add(panelFormulario, BorderLayout.NORTH);
 
-        // ---------- Tabla (parte central) ----------
+        // ---------- Tabla ----------
         modeloTabla = new AnimalTableModel();
         tabla = new JTable(modeloTabla);
         tabla.setRowHeight(22);
@@ -157,10 +143,9 @@ public class VentanaAnimales extends JFrame {
         scroll.setBorder(BorderFactory.createTitledBorder("Listado de animales"));
         add(scroll, BorderLayout.CENTER);
 
-        // ---------- Panel de busqueda + acciones (parte inferior) ----------
+        // ---------- Panel de busqueda y acciones ----------
         JPanel panelSur = new JPanel(new BorderLayout());
 
-        // Sub-panel: busqueda
         JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         panelBusqueda.setBorder(BorderFactory.createTitledBorder("Buscar"));
 
@@ -178,11 +163,9 @@ public class VentanaAnimales extends JFrame {
         panelBusqueda.add(botonBuscar);
         panelBusqueda.add(botonMostrarTodos);
 
-        // Conectamos los botones de busqueda.
         botonBuscar.addActionListener((ActionEvent e) -> buscar());
         botonMostrarTodos.addActionListener((ActionEvent e) -> refrescarTabla());
 
-        // Sub-panel: acciones
         JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
         JButton botonEditar = new JButton("Editar estado");
         JButton botonEliminar = new JButton("Eliminar logico");
@@ -202,22 +185,15 @@ public class VentanaAnimales extends JFrame {
         add(panelSur, BorderLayout.SOUTH);
     }
 
-    // ============================================================
-    // EVENTOS DE VENTANA
-    // ============================================================
+    // Por ahora no hay eventos de ventana extra que registrar
     private void registrarEventos() {
-        // No se requiere nada extra por ahora. Todos los eventos se
-        // conectaron directamente en inicializarComponentes.
+        // Los eventos ya se conectaron en inicializarComponentes
     }
 
-    // ============================================================
-    // ACCIONES
-    // ============================================================
+    // ---------- ACCIONES ----------
 
-    /**
-     * Registra un animal nuevo en el sistema.
-     * Valida campos vacios, edad numerica y duplicados de codigo.
-     */
+    // Registra un animal nuevo. Valida campos vacios, edad numerica
+    // y codigo duplicado.
     private void registrarAnimal() {
         String codigo = campoCodigo.getText().trim();
         String nombre = campoNombre.getText().trim();
@@ -228,7 +204,7 @@ public class VentanaAnimales extends JFrame {
         String estadoClinico = (String) comboEstadoClinico.getSelectedItem();
         String estadoAdopcion = (String) comboEstadoAdopcion.getSelectedItem();
 
-        // Validacion: campos vacios.
+        // Validacion: campos vacios
         if (codigo.isEmpty() || nombre.isEmpty() || raza.isEmpty() || edadTexto.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Todos los campos son obligatorios.",
@@ -236,7 +212,7 @@ public class VentanaAnimales extends JFrame {
             return;
         }
 
-        // Validacion: edad debe ser numero entero positivo.
+        // Validacion: edad debe ser entero positivo
         int edad;
         try {
             edad = Integer.parseInt(edadTexto);
@@ -248,7 +224,7 @@ public class VentanaAnimales extends JFrame {
             return;
         }
 
-        // Validacion: codigo duplicado.
+        // Validacion: codigo duplicado
         if (sistema.existeAnimalConCodigo(codigo)) {
             JOptionPane.showMessageDialog(this,
                     "Ya existe un animal con el codigo '" + codigo + "'.",
@@ -256,11 +232,10 @@ public class VentanaAnimales extends JFrame {
             return;
         }
 
-        // Creacion del objeto Animal.
+        // Creamos el objeto y lo agregamos al sistema
         Animal a = new Animal(codigo, nombre, especie, raza, sexo,
                 edad, estadoClinico, estadoAdopcion);
 
-        // Intento de agregar al sistema.
         if (!sistema.agregarAnimal(a)) {
             JOptionPane.showMessageDialog(this,
                     "No se pudo registrar el animal (arreglo lleno).",
@@ -268,7 +243,6 @@ public class VentanaAnimales extends JFrame {
             return;
         }
 
-        // Registro en bitacora.
         sistema.registrarBitacora("ANIMAL_REGISTRADO",
                 "Se registro el animal " + codigo + " (" + nombre + ")");
 
@@ -280,9 +254,7 @@ public class VentanaAnimales extends JFrame {
         refrescarTabla();
     }
 
-    /**
-     * Limpia todos los campos del formulario.
-     */
+    // Limpia los campos del formulario
     private void limpiarFormulario() {
         campoCodigo.setText("");
         campoNombre.setText("");
@@ -295,16 +267,12 @@ public class VentanaAnimales extends JFrame {
         campoCodigo.requestFocus();
     }
 
-    /**
-     * Refresca la tabla con todos los animales activos del sistema.
-     */
+    // Refresca la tabla con todos los animales activos
     private void refrescarTabla() {
         modeloTabla.actualizar(sistema.getAnimalesActivos());
     }
 
-    /**
-     * Realiza la busqueda segun el criterio seleccionado.
-     */
+    // Busca segun el criterio seleccionado en el combo
     private void buscar() {
         String texto = campoBusqueda.getText().trim();
         if (texto.isEmpty()) {
@@ -318,26 +286,25 @@ public class VentanaAnimales extends JFrame {
         Animal[] resultado = new Animal[0];
 
         switch (criterio) {
-            case 0: // Codigo exacto
+            case 0: // codigo exacto
                 Animal a = sistema.buscarAnimalPorCodigo(texto);
                 if (a != null) {
                     resultado = new Animal[]{a};
                 }
                 break;
-            case 1: // Nombre parcial
+            case 1: // nombre parcial
                 resultado = sistema.buscarAnimalesPorNombre(texto);
                 break;
-            case 2: // Especie
+            case 2: // especie
                 resultado = sistema.buscarAnimalesPorEspecie(texto);
                 break;
-            case 3: // Estado de adopcion
+            case 3: // estado de adopcion
                 resultado = sistema.buscarAnimalesPorEstado(texto);
                 break;
         }
 
         modeloTabla.actualizar(resultado);
 
-        // Si no hay resultados, avisamos al usuario.
         if (modeloTabla.getRowCount() == 0) {
             JOptionPane.showMessageDialog(this,
                     "No se encontraron animales con ese criterio.",
@@ -345,10 +312,8 @@ public class VentanaAnimales extends JFrame {
         }
     }
 
-    /**
-     * Edita el estado clinico y de adopcion del animal seleccionado
-     * en la tabla (o de uno buscado por codigo si no hay seleccion).
-     */
+    // Edita el estado clinico y de adopcion del animal seleccionado.
+    // Si no hay fila seleccionada, pide el codigo.
     private void editarEstado() {
         int fila = tabla.getSelectedRow();
         Animal a;
@@ -356,7 +321,6 @@ public class VentanaAnimales extends JFrame {
         if (fila >= 0) {
             a = modeloTabla.getAnimalEnFila(fila);
         } else {
-            // Si no hay fila seleccionada, se pide el codigo.
             String codigo = JOptionPane.showInputDialog(this,
                     "Ingrese el codigo del animal a editar:");
             if (codigo == null || codigo.trim().isEmpty()) return;
@@ -369,7 +333,7 @@ public class VentanaAnimales extends JFrame {
             }
         }
 
-        // Pedimos los nuevos estados con dos cuadros de dialogo.
+        // Pedimos el nuevo estado clinico
         String[] opcionesClinico = {"Sano", "En tratamiento", "Critico"};
         String nuevoClinico = (String) JOptionPane.showInputDialog(
                 this, "Nuevo estado clinico:", "Editar estado",
@@ -377,6 +341,7 @@ public class VentanaAnimales extends JFrame {
                 opcionesClinico, a.getEstadoClinico());
         if (nuevoClinico == null) return;
 
+        // Pedimos el nuevo estado de adopcion
         String[] opcionesAdopcion = {"Disponible", "En proceso", "Adoptado", "No apto"};
         String nuevoAdopcion = (String) JOptionPane.showInputDialog(
                 this, "Nuevo estado de adopcion:", "Editar estado",
@@ -384,7 +349,6 @@ public class VentanaAnimales extends JFrame {
                 opcionesAdopcion, a.getEstadoAdopcion());
         if (nuevoAdopcion == null) return;
 
-        // Aplicamos el cambio.
         if (sistema.editarEstadoAnimal(a.getCodigo(), nuevoClinico, nuevoAdopcion)) {
             sistema.registrarBitacora("ANIMAL_EDITADO",
                     "Animal " + a.getCodigo() + " -> " + nuevoClinico + " / " + nuevoAdopcion);
@@ -399,11 +363,8 @@ public class VentanaAnimales extends JFrame {
         }
     }
 
-    /**
-     * Elimina logicamente el animal seleccionado (o el ingresado por codigo).
-     * La eliminacion logica significa marcarlo como inactivo, no borrarlo
-     * del arreglo.
-     */
+    // Elimina logicamente el animal seleccionado.
+    // No se borra del arreglo, solo se marca como eliminado.
     private void eliminarLogico() {
         int fila = tabla.getSelectedRow();
         String codigo;
@@ -418,7 +379,7 @@ public class VentanaAnimales extends JFrame {
             codigo = codigo.trim();
         }
 
-        // Confirmacion antes de eliminar.
+        // Confirmacion antes de eliminar
         int opcion = JOptionPane.showConfirmDialog(this,
                 "¿Eliminar logicamente el animal " + codigo + "?",
                 "Confirmar", JOptionPane.YES_NO_OPTION);

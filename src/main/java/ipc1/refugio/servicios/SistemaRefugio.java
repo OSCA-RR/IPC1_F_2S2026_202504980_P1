@@ -68,7 +68,7 @@ public class SistemaRefugio {
         }
     }
     
-        // ============================================================
+    // ============================================================
     // 4. USUARIOS
     // ============================================================
     public void agregarUsuario(Usuario u) {
@@ -107,7 +107,7 @@ public class SistemaRefugio {
         usuarioActual = null;
     }
     
-        // ============================================================
+    // ============================================================
     // 5. ANIMALES
     // ============================================================
     public boolean existeAnimalConCodigo(String codigo) {
@@ -120,7 +120,7 @@ public class SistemaRefugio {
         return false;
     }
 
-        public boolean agregarAnimal(Animal a) {
+    public boolean agregarAnimal(Animal a) {
         // Primero buscamos si ya existe un animal con ese codigo (activo o eliminado).
         for (int i = 0; i < contadorAnimales; i++) {
             if (animales[i] != null
@@ -240,7 +240,7 @@ public class SistemaRefugio {
         return true;
     }
     
-        // ============================================================
+    // ============================================================
     // 6. ADOPTANTES
     // ============================================================
     public boolean existeAdoptanteConDpi(String dpi) {
@@ -323,7 +323,7 @@ public class SistemaRefugio {
         return true;
     }
     
-        // ============================================================
+    // ============================================================
     // 7. SOLICITUDES
     // ============================================================
     public boolean existeSolicitudConCodigo(String codigo) {
@@ -403,7 +403,7 @@ public class SistemaRefugio {
         return contadorSolicitudes;
     }
     
-        // ============================================================
+    // ============================================================
     // 8. RESCATES
     // ============================================================
     public boolean existeRescateConCodigo(String codigo) {
@@ -475,7 +475,7 @@ public class SistemaRefugio {
         return contadorRescates;
     }
     
-        // ============================================================
+    // ============================================================
     // 9. ESPACIOS (MATRIZ)
     // ============================================================
     public EspacioRefugio[][] getEspacios() {
@@ -486,7 +486,9 @@ public class SistemaRefugio {
         if (area < 0 || area >= AREAS || jaula < 0 || jaula >= JAULAS) return null;
         return espacios[area][jaula];
     }
-
+    
+     // Asigna un animal a una celda libre. Valida que la celda este libre,
+    // que el animal exista y que no este ya asignado en otro espacio.
     public boolean asignarEspacio(int area, int jaula, String codigoAnimal) {
         if (area < 0 || area >= AREAS || jaula < 0 || jaula >= JAULAS) return false;
 
@@ -503,7 +505,7 @@ public class SistemaRefugio {
         a.setJaula(jaula);
         return true;
     }
-
+     // Libera una celda ocupada y resetea la ubicacion del animal.
     public boolean liberarEspacio(int area, int jaula) {
         if (area < 0 || area >= AREAS || jaula < 0 || jaula >= JAULAS) return false;
 
@@ -540,7 +542,7 @@ public class SistemaRefugio {
         return (contarEspaciosOcupados() * 100.0) / total;
     }
     
-        // ============================================================
+    // ============================================================
     // 10. BITÁCORA
     // ============================================================
     public void registrarBitacora(String accion, String detalle) {

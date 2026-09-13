@@ -8,16 +8,12 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-/**
- * Ventana principal del sistema.
- *
- * Muestra botones a cada modulo del refugio. Los modulos se implementaran
- * en las siguientes fases; por ahora los botones solo muestran un mensaje
- * indicando que el modulo estara disponible proximamente.
- */
+// Ventana principal del sistema.
+// Muestra botones a cada modulo y controla el cierre de sesion
+// y el cierre de la aplicacion (guardando datos antes de salir).
 public class VentanaPrincipal extends JFrame {
 
-    private final SistemaRefugio sistema;
+    private final SistemaRefugio sistema;  // referencia al sistema compartido
 
     public VentanaPrincipal(SistemaRefugio sistema) {
         this.sistema = sistema;
@@ -25,20 +21,18 @@ public class VentanaPrincipal extends JFrame {
         setTitle("Centro de Rescate Animal - Panel Principal");
         setSize(700, 500);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);  // Manejamos el cierre manualmente.
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);  // manejamos el cierre a mano
         setLayout(new BorderLayout());
 
         inicializarComponentes();
         registrarEventos();
     }
 
-    /**
-     * Construye el menu superior, el panel central con botones y la barra
-     * de estado inferior.
-     */
+    // Construye el menu superior, el panel central de botones
+    // y la barra de estado inferior.
     private void inicializarComponentes() {
 
-        // -------- Menu superior --------
+        // ---------- Menu superior ----------
         JMenuBar barraMenu = new JMenuBar();
 
         JMenu menuArchivo = new JMenu("Archivo");
@@ -56,7 +50,7 @@ public class VentanaPrincipal extends JFrame {
 
         setJMenuBar(barraMenu);
 
-        // -------- Encabezado con nombre del usuario --------
+        // ---------- Encabezado con nombre del usuario ----------
         String nombreUsuario = (sistema.getUsuarioActual() != null)
                 ? sistema.getUsuarioActual().getNombreUsuario()
                 : "Invitado";
@@ -71,80 +65,71 @@ public class VentanaPrincipal extends JFrame {
         encabezado.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
         add(encabezado, BorderLayout.NORTH);
 
-                // -------- Panel central con botones --------
+        // ---------- Panel central con botones ----------
         JPanel panelBotones = new JPanel(new GridLayout(3, 3, 15, 15));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Boton de Animales conectado al modulo real.
+        // Boton de Animales
         JButton botonAnimales = new JButton("Animales");
         botonAnimales.setFont(new Font("Arial", Font.PLAIN, 14));
         botonAnimales.addActionListener(e ->
                 new VentanaAnimales(sistema).setVisible(true));
         panelBotones.add(botonAnimales);
 
-        // El resto de modulos aun no estan implementados.
+        // Boton de Adoptantes
         JButton botonAdoptantes = new JButton("Adoptantes");
         botonAdoptantes.setFont(new Font("Arial", Font.PLAIN, 14));
         botonAdoptantes.addActionListener(e ->
-        new VentanaAdoptantes(sistema).setVisible(true));
+                new VentanaAdoptantes(sistema).setVisible(true));
         panelBotones.add(botonAdoptantes);
-        
+
+        // Boton de Solicitudes
         JButton botonSolicitudes = new JButton("Solicitudes");
         botonSolicitudes.setFont(new Font("Arial", Font.PLAIN, 14));
         botonSolicitudes.addActionListener(e ->
-        new VentanaSolicitudes(sistema).setVisible(true));
+                new VentanaSolicitudes(sistema).setVisible(true));
         panelBotones.add(botonSolicitudes);
-        
+
+        // Boton de Rescates
         JButton botonRescates = new JButton("Rescates");
         botonRescates.setFont(new Font("Arial", Font.PLAIN, 14));
         botonRescates.addActionListener(e ->
-        new VentanaRescates(sistema).setVisible(true));
+                new VentanaRescates(sistema).setVisible(true));
         panelBotones.add(botonRescates);
-        
+
+        // Boton de Ubicaciones
         JButton botonUbicaciones = new JButton("Ubicaciones");
         botonUbicaciones.setFont(new Font("Arial", Font.PLAIN, 14));
         botonUbicaciones.addActionListener(e ->
-        new VentanaUbicaciones(sistema).setVisible(true));
+                new VentanaUbicaciones(sistema).setVisible(true));
         panelBotones.add(botonUbicaciones);
-        
+
+        // Boton de Reportes
         JButton botonReportes = new JButton("Reportes");
         botonReportes.setFont(new Font("Arial", Font.PLAIN, 14));
         botonReportes.addActionListener(e ->
-        new VentanaReportes(sistema).setVisible(true));
+                new VentanaReportes(sistema).setVisible(true));
         panelBotones.add(botonReportes);
-        
+
+        // Boton de Datos del Estudiante
         JButton botonDatos = new JButton("Datos del Estudiante");
         botonDatos.setFont(new Font("Arial", Font.PLAIN, 14));
         botonDatos.addActionListener(e ->
-        new VentanaDatosEstudiante().setVisible(true));
+                new VentanaDatosEstudiante().setVisible(true));
         panelBotones.add(botonDatos);
-        
+
+        // Boton de cerrar sesion
         panelBotones.add(crearBotonCerrarSesion());
 
         add(panelBotones, BorderLayout.CENTER);
 
-        // -------- Barra de estado inferior --------
+        // ---------- Barra de estado inferior ----------
         JLabel estado = new JLabel(" Sistema listo.");
         estado.setBorder(BorderFactory.createEtchedBorder());
         add(estado, BorderLayout.SOUTH);
     }
 
-    /**
-     * Crea un boton para un modulo generico. Por ahora solo muestra un
-     * mensaje indicando que estara disponible mas adelante.
-     */
-    private JButton crearBotonModulo(String nombreModulo) {
-        JButton boton = new JButton(nombreModulo);
-        boton.setFont(new Font("Arial", Font.PLAIN, 14));
-        boton.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                "El modulo '" + nombreModulo + "' estara disponible proximamente.",
-                "Modulo pendiente", JOptionPane.INFORMATION_MESSAGE));
-        return boton;
-    }
-
-    /**
-     * Crea el boton de cerrar sesion.
-     */
+    // Crea el boton de cerrar sesion (rojo)
     private JButton crearBotonCerrarSesion() {
         JButton boton = new JButton("Cerrar Sesion");
         boton.setFont(new Font("Arial", Font.BOLD, 14));
@@ -153,12 +138,9 @@ public class VentanaPrincipal extends JFrame {
         return boton;
     }
 
-    /**
-     * Registra los eventos de la ventana (por ejemplo, el cierre con la X).
-     */
+    // Registra el cierre de ventana con la X
     private void registrarEventos() {
 
-        // Antes de cerrar la ventana, preguntamos al usuario y guardamos.
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -172,9 +154,8 @@ public class VentanaPrincipal extends JFrame {
         });
     }
 
-    /**
-     * Cierra la sesion actual y regresa al login.
-     */
+    // Cierra la sesion actual y vuelve al login.
+    // Guarda los datos antes de salir.
     private void cerrarSesion() {
         int opcion = JOptionPane.showConfirmDialog(this,
                 "¿Cerrar sesion? Se guardaran los datos.",
@@ -189,9 +170,7 @@ public class VentanaPrincipal extends JFrame {
         new VentanaLogin(sistema).setVisible(true);
     }
 
-    /**
-     * Guarda datos y cierra la aplicacion por completo.
-     */
+    // Guarda los datos y cierra toda la aplicacion
     private void salirDelSistema() {
         sistema.registrarBitacora("SALIDA", "Cierre de la aplicacion");
         GestorArchivos.guardarTodo(sistema);

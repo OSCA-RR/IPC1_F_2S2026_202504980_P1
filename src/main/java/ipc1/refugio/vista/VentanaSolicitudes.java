@@ -5,65 +5,48 @@ import ipc1.refugio.modelo.Animal;
 import ipc1.refugio.modelo.Solicitud;
 import ipc1.refugio.servicios.SistemaRefugio;
 import ipc1.refugio.utilidades.FechaUtil;
+import ipc1.refugio.utilidades.TextoLimitado;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-/**
- * Ventana del modulo de solicitudes de adopcion.
- *
- * Permite:
- *  - Registrar una solicitud vinculando un animal y un adoptante.
- *  - Ver todas las solicitudes en una tabla.
- *  - Cambiar el estado de una solicitud (Pendiente, Aprobada,
- *    Rechazada, Cancelada). Al aprobar, el animal cambia a "Adoptado"
- *    automaticamente (logica ya implementada en SistemaRefugio).
- *  - Consultar el historial de solicitudes de un animal.
- *  - Filtrar solicitudes pendientes.
- *
- * Cada accion importante se registra en la bitacora.
- */
+// Ventana del modulo de solicitudes de adopcion.
+// Permite registrar solicitudes, cambiar su estado, filtrar pendientes
+// y consultar el historial de solicitudes por animal.
+// Al aprobar una solicitud, el animal pasa a "Adoptado" automaticamente.
 public class VentanaSolicitudes extends JFrame {
 
-    private final SistemaRefugio sistema;
+    private final SistemaRefugio sistema;  // referencia al sistema compartido
 
-    // ============================================================
-    // COMPONENTES DEL FORMULARIO
-    // ============================================================
+    // Componentes del formulario de registro
     private JTextField campoCodigo;
     private JComboBox<String> comboAnimales;    // "A001 - Firulais"
     private JComboBox<String> comboAdoptantes;  // "AD001 - Juan"
     private JTextField campoObservaciones;
 
-    // ============================================================
-    // COMPONENTES DE LA TABLA Y BUSQUEDA
-    // ============================================================
+    // Componentes de la tabla y busqueda
     private JTable tabla;
     private SolicitudTableModel modeloTabla;
 
     private JComboBox<String> comboFiltro;
     private JTextField campoBusquedaAnimal;
 
-    // ============================================================
-    // CONSTRUCTOR
-    // ============================================================
     public VentanaSolicitudes(SistemaRefugio sistema) {
         this.sistema = sistema;
 
         setTitle("Modulo de Solicitudes de Adopcion");
         setSize(1050, 650);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);   // solo cierra esta ventana
         setLayout(new BorderLayout());
 
         inicializarComponentes();
-        refrescarTabla();
+        refrescarTabla();   // carga las solicitudes al abrir
     }
 
-    // ============================================================
-    // CONSTRUCCION DE LA INTERFAZ
-    // ============================================================
+    // Construye la interfaz: formulario arriba, tabla al centro,
+    // filtros y acciones abajo.
     private void inicializarComponentes() {
 
         // ---------- Formulario de registro ----------
@@ -75,21 +58,22 @@ public class VentanaSolicitudes extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Fila 1: codigo y fecha (fecha solo informativa).
+        // Fila 1: codigo y fecha (fecha solo informativa)
         gbc.gridx = 0; gbc.gridy = 0;
         panelFormulario.add(new JLabel("Codigo solicitud:"), gbc);
         gbc.gridx = 1;
         campoCodigo = new JTextField(10);
+        campoCodigo.setDocument(new TextoLimitado(10));
         panelFormulario.add(campoCodigo, gbc);
 
         gbc.gridx = 2;
         panelFormulario.add(new JLabel("Fecha (automatica):"), gbc);
         gbc.gridx = 3;
         JTextField campoFecha = new JTextField(FechaUtil.ahora(), 18);
-        campoFecha.setEditable(false);  // Solo lectura.
+        campoFecha.setEditable(false);   // solo lectura
         panelFormulario.add(campoFecha, gbc);
 
-        // Fila 2: combo de animales y combo de adoptantes.
+        // Fila 2: animal y adoptante
         gbc.gridx = 0; gbc.gridy = 1;
         panelFormulario.add(new JLabel("Animal:"), gbc);
         gbc.gridx = 1;
@@ -102,15 +86,16 @@ public class VentanaSolicitudes extends JFrame {
         comboAdoptantes = new JComboBox<>();
         panelFormulario.add(comboAdoptantes, gbc);
 
-        // Fila 3: observaciones.
+        // Fila 3: observaciones
         gbc.gridx = 0; gbc.gridy = 2;
         panelFormulario.add(new JLabel("Observaciones:"), gbc);
         gbc.gridx = 1;
         gbc.gridwidth = 3;
         campoObservaciones = new JTextField(40);
+        campoObservaciones.setDocument(new TextoLimitado(200));
         panelFormulario.add(campoObservaciones, gbc);
 
-        // Fila 4: botones del formulario.
+        // Fila 4: botones del formulario
         JPanel panelBotonesFormulario = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         JButton botonRegistrar = new JButton("Registrar solicitud");
         JButton botonLimpiar = new JButton("Limpiar");
@@ -139,15 +124,13 @@ public class VentanaSolicitudes extends JFrame {
         scroll.setBorder(BorderFactory.createTitledBorder("Solicitudes registradas"));
         add(scroll, BorderLayout.CENTER);
 
-        // ---------- Panel de busqueda y acciones ----------
+        // ---------- Panel de filtro/busqueda y acciones ----------
         JPanel panelSur = new JPanel(new BorderLayout());
 
         JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         panelBusqueda.setBorder(BorderFactory.createTitledBorder("Filtrar / Buscar"));
 
-        comboFiltro = new JComboBox<>(new String[]{
-            "Todas", "Pendientes"
-        });
+        comboFiltro = new JComboBox<>(new String[]{"Todas", "Pendientes"});
         campoBusquedaAnimal = new JTextField(10);
         JButton botonFiltrar = new JButton("Aplicar");
         JButton botonHistorial = new JButton("Historial por animal");
@@ -177,39 +160,32 @@ public class VentanaSolicitudes extends JFrame {
 
         add(panelSur, BorderLayout.SOUTH);
 
-        // Cargamos los combos al abrir.
+        // Cargamos los combos al abrir la ventana
         cargarCombos();
     }
 
-    // ============================================================
-    // CARGA DE COMBOS
-    // ============================================================
+    // ---------- CARGA DE COMBOS ----------
 
-    /**
-     * Llena los combos con los animales disponibles (no adoptados, no
-     * eliminados) y con los adoptantes activos.
-     *
-     * Solo se cargan animales en estado "Disponible" o "En proceso",
-     * porque no tiene sentido abrir una solicitud para un animal ya
-     * adoptado o marcado como no apto.
-     */
+    // Llena los combos con los animales DISPONIBLES y los adoptantes activos.
+    // Solo se cargan animales "Disponible" porque un animal ya en proceso
+    // o adoptado no debe poder recibir otra solicitud.
     private void cargarCombos() {
-        // Limpiamos los combos.
+        // Limpiamos los combos
         comboAnimales.removeAllItems();
         comboAdoptantes.removeAllItems();
 
-        // Cargamos animales que se pueden solicitar.
+        // Cargamos animales que se pueden solicitar
         Animal[] animales = sistema.getAnimalesActivos();
         for (int i = 0; i < animales.length; i++) {
             Animal a = animales[i];
             if (a == null) break;
-            if (a.getEstadoAdopcion().equalsIgnoreCase("Disponible")
-                    || a.getEstadoAdopcion().equalsIgnoreCase("En proceso")) {
+            // Solo se pueden solicitar animales con estado "Disponible"
+            if (a.getEstadoAdopcion().equalsIgnoreCase("Disponible")) {
                 comboAnimales.addItem(a.getCodigo() + " - " + a.getNombre());
             }
         }
 
-        // Cargamos adoptantes activos.
+        // Cargamos adoptantes activos
         Adoptante[] adoptantes = sistema.getAdoptantesActivos();
         for (int i = 0; i < adoptantes.length; i++) {
             Adoptante ad = adoptantes[i];
@@ -217,7 +193,7 @@ public class VentanaSolicitudes extends JFrame {
             comboAdoptantes.addItem(ad.getCodigo() + " - " + ad.getNombre());
         }
 
-        // Si alguno quedo vacio, mostramos un mensaje informativo en el combo.
+        // Si alguno quedo vacio, mostramos un aviso en el combo
         if (comboAnimales.getItemCount() == 0) {
             comboAnimales.addItem("(Sin animales disponibles)");
         }
@@ -226,10 +202,8 @@ public class VentanaSolicitudes extends JFrame {
         }
     }
 
-    /**
-     * Extrae el codigo de un item del combo tipo "A001 - Firulais".
-     * Devuelve null si el item no tiene formato valido.
-     */
+    // Extrae el codigo de un item del combo tipo "A001 - Firulais".
+    // Devuelve null si el texto no tiene el formato esperado.
     private String extraerCodigoDeCombo(JComboBox<String> combo) {
         Object sel = combo.getSelectedItem();
         if (sel == null) return null;
@@ -239,19 +213,15 @@ public class VentanaSolicitudes extends JFrame {
         return texto.substring(0, guion).trim();
     }
 
-    // ============================================================
-    // ACCIONES
-    // ============================================================
+    // ---------- ACCIONES ----------
 
-    /**
-     * Registra una nueva solicitud con los datos del formulario.
-     * Valida campos vacios y codigo duplicado.
-     */
+    // Registra una nueva solicitud. Valida campos y que exista
+    // animal disponible y adoptante activo.
     private void registrarSolicitud() {
         String codigo = campoCodigo.getText().trim();
         String observaciones = campoObservaciones.getText().trim();
 
-        // Validacion: codigo obligatorio.
+        // Validacion: codigo obligatorio
         if (codigo.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Debe ingresar el codigo de la solicitud.",
@@ -259,7 +229,7 @@ public class VentanaSolicitudes extends JFrame {
             return;
         }
 
-        // Validacion: debe haber animal y adoptante seleccionados.
+        // Validacion: debe haber animal y adoptante seleccionados
         String codigoAnimal = extraerCodigoDeCombo(comboAnimales);
         String codigoAdoptante = extraerCodigoDeCombo(comboAdoptantes);
 
@@ -270,7 +240,7 @@ public class VentanaSolicitudes extends JFrame {
             return;
         }
 
-        // Validacion: codigo duplicado.
+        // Validacion: codigo duplicado
         if (sistema.existeSolicitudConCodigo(codigo)) {
             JOptionPane.showMessageDialog(this,
                     "Ya existe una solicitud con el codigo '" + codigo + "'.",
@@ -278,7 +248,7 @@ public class VentanaSolicitudes extends JFrame {
             return;
         }
 
-        // Creamos la solicitud con fecha actual y estado inicial "Pendiente".
+        // Creamos la solicitud con fecha actual y estado inicial "Pendiente"
         Solicitud s = new Solicitud(codigo, codigoAnimal, codigoAdoptante,
                 FechaUtil.ahora(), "Pendiente", observaciones);
 
@@ -290,7 +260,7 @@ public class VentanaSolicitudes extends JFrame {
         }
 
         // Marcamos el animal como "En proceso" para que no aparezca en
-        // futuras solicitudes duplicadas.
+        // futuras solicitudes
         Animal animal = sistema.buscarAnimalPorCodigo(codigoAnimal);
         if (animal != null) {
             animal.setEstadoAdopcion("En proceso");
@@ -309,9 +279,7 @@ public class VentanaSolicitudes extends JFrame {
         refrescarTabla();
     }
 
-    /**
-     * Limpia los campos del formulario.
-     */
+    // Limpia los campos del formulario
     private void limpiarFormulario() {
         campoCodigo.setText("");
         campoObservaciones.setText("");
@@ -320,23 +288,19 @@ public class VentanaSolicitudes extends JFrame {
         campoCodigo.requestFocus();
     }
 
-    /**
-     * Refresca la tabla con todas las solicitudes registradas.
-     */
+    // Refresca la tabla con todas las solicitudes
     private void refrescarTabla() {
         modeloTabla.actualizar(sistema.getTodasLasSolicitudes());
     }
 
-    /**
-     * Aplica el filtro seleccionado en el combo.
-     */
+    // Aplica el filtro seleccionado (Todas / Pendientes)
     private void aplicarFiltro() {
         int filtro = comboFiltro.getSelectedIndex();
         if (filtro == 1) {
-            // Pendientes.
+            // Pendientes
             modeloTabla.actualizar(sistema.getSolicitudesPendientes());
         } else {
-            // Todas.
+            // Todas
             refrescarTabla();
         }
 
@@ -347,9 +311,7 @@ public class VentanaSolicitudes extends JFrame {
         }
     }
 
-    /**
-     * Muestra el historial de solicitudes de un animal en especifico.
-     */
+    // Muestra el historial de solicitudes de un animal especifico
     private void historialPorAnimal() {
         String codigo = campoBusquedaAnimal.getText().trim();
         if (codigo.isEmpty()) {
@@ -359,7 +321,7 @@ public class VentanaSolicitudes extends JFrame {
             return;
         }
 
-        // Verificamos que el animal exista.
+        // Verificamos que el animal exista
         if (sistema.buscarAnimalPorCodigo(codigo) == null) {
             JOptionPane.showMessageDialog(this,
                     "No existe un animal con ese codigo.",
@@ -376,11 +338,9 @@ public class VentanaSolicitudes extends JFrame {
         }
     }
 
-    /**
-     * Cambia el estado de la solicitud seleccionada.
-     * Al aprobar, SistemaRefugio cambia automaticamente el animal a
-     * "Adoptado". Al rechazar o cancelar, el animal vuelve a "Disponible".
-     */
+    // Cambia el estado de la solicitud seleccionada.
+    // Si se aprueba, el animal pasa a "Adoptado".
+    // Si se rechaza o cancela, el animal vuelve a "Disponible".
     private void cambiarEstado() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {
@@ -392,7 +352,7 @@ public class VentanaSolicitudes extends JFrame {
 
         Solicitud s = modeloTabla.getSolicitudEnFila(fila);
 
-        // Opciones de estado para el usuario.
+        // Opciones de estado para el usuario
         String[] opciones = {"Pendiente", "Aprobada", "Rechazada", "Cancelada"};
         String nuevoEstado = (String) JOptionPane.showInputDialog(
                 this,
@@ -403,10 +363,10 @@ public class VentanaSolicitudes extends JFrame {
                 opciones,
                 s.getEstado());
 
-        if (nuevoEstado == null) return; // El usuario cancelo.
+        if (nuevoEstado == null) return;   // el usuario cancelo
 
-        // Si es "Aprobada", el sistema marca el animal como adoptado.
-        // Si es "Rechazada" o "Cancelada", el animal vuelve a "Disponible".
+        // Llamamos al sistema para cambiar el estado.
+        // El sistema maneja el paso a "Adoptado" si es aprobada.
         if (!sistema.cambiarEstadoSolicitud(s.getCodigo(), nuevoEstado)) {
             JOptionPane.showMessageDialog(this,
                     "No se pudo cambiar el estado.",
@@ -414,7 +374,7 @@ public class VentanaSolicitudes extends JFrame {
             return;
         }
 
-        // Ajustes adicionales segun el nuevo estado.
+        // Si se rechaza o cancela, el animal vuelve a "Disponible"
         Animal animal = sistema.buscarAnimalPorCodigo(s.getCodigoAnimal());
         if (animal != null) {
             if (nuevoEstado.equalsIgnoreCase("Rechazada")

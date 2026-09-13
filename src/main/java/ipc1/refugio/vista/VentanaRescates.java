@@ -3,61 +3,46 @@ package ipc1.refugio.vista;
 import ipc1.refugio.modelo.Rescate;
 import ipc1.refugio.servicios.SistemaRefugio;
 import ipc1.refugio.utilidades.FechaUtil;
+import ipc1.refugio.utilidades.TextoLimitado;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-/**
- * Ventana del modulo de rescates urgentes.
- *
- * Permite:
- *  - Registrar un rescate nuevo con codigo, ubicacion, descripcion y prioridad.
- *  - Ver los rescates en una tabla.
- *  - Filtrar por estado (activos) o por prioridad.
- *  - Atender un rescate cambiando su estado a "Atendido".
- *
- * Cada accion importante se registra en la bitacora.
- */
+// Ventana del modulo de rescates urgentes.
+// Permite registrar rescates, verlos, filtrarlos y atenderlos.
+// Cada accion importante queda en la bitacora.
 public class VentanaRescates extends JFrame {
 
-    private final SistemaRefugio sistema;
+    private final SistemaRefugio sistema;  // referencia al sistema compartido
 
-    // ============================================================
-    // COMPONENTES DEL FORMULARIO
-    // ============================================================
+    // Componentes del formulario de registro
     private JTextField campoCodigo;
     private JTextField campoUbicacion;
     private JTextField campoDescripcion;
     private JComboBox<String> comboPrioridad;
 
-    // ============================================================
-    // COMPONENTES DE LA TABLA Y FILTRO
-    // ============================================================
+    // Componentes de la tabla y el filtro
     private JTable tabla;
     private RescateTableModel modeloTabla;
 
     private JComboBox<String> comboFiltro;
 
-    // ============================================================
-    // CONSTRUCTOR
-    // ============================================================
     public VentanaRescates(SistemaRefugio sistema) {
         this.sistema = sistema;
 
         setTitle("Modulo de Rescates Urgentes");
         setSize(1000, 600);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);   // solo cierra esta ventana
         setLayout(new BorderLayout());
 
         inicializarComponentes();
-        refrescarTabla();
+        refrescarTabla();   // carga los rescates al abrir
     }
 
-    // ============================================================
-    // CONSTRUCCION DE LA INTERFAZ
-    // ============================================================
+    // Construye la interfaz: formulario arriba, tabla al centro,
+    // filtro y acciones abajo.
     private void inicializarComponentes() {
 
         // ---------- Formulario de registro ----------
@@ -69,11 +54,12 @@ public class VentanaRescates extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Fila 1: codigo y prioridad.
+        // Fila 1: codigo y prioridad
         gbc.gridx = 0; gbc.gridy = 0;
         panelFormulario.add(new JLabel("Codigo:"), gbc);
         gbc.gridx = 1;
         campoCodigo = new JTextField(10);
+        campoCodigo.setDocument(new TextoLimitado(10));
         panelFormulario.add(campoCodigo, gbc);
 
         gbc.gridx = 2;
@@ -82,24 +68,26 @@ public class VentanaRescates extends JFrame {
         comboPrioridad = new JComboBox<>(new String[]{"Alta", "Media", "Baja"});
         panelFormulario.add(comboPrioridad, gbc);
 
-        // Fila 2: ubicacion (ocupa todo el ancho).
+        // Fila 2: ubicacion (ocupa todo el ancho)
         gbc.gridx = 0; gbc.gridy = 1;
         panelFormulario.add(new JLabel("Ubicacion:"), gbc);
         gbc.gridx = 1;
         gbc.gridwidth = 3;
         campoUbicacion = new JTextField(40);
+        campoUbicacion.setDocument(new TextoLimitado(100));
         panelFormulario.add(campoUbicacion, gbc);
 
-        // Fila 3: descripcion (ocupa todo el ancho).
+        // Fila 3: descripcion (ocupa todo el ancho)
         gbc.gridx = 0; gbc.gridy = 2;
         gbc.gridwidth = 1;
         panelFormulario.add(new JLabel("Descripcion:"), gbc);
         gbc.gridx = 1;
         gbc.gridwidth = 3;
         campoDescripcion = new JTextField(40);
+        campoDescripcion.setDocument(new TextoLimitado(200));
         panelFormulario.add(campoDescripcion, gbc);
 
-        // Fila 4: botones del formulario.
+        // Fila 4: botones del formulario
         JPanel panelBotonesFormulario = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         JButton botonRegistrar = new JButton("Registrar rescate");
         JButton botonLimpiar = new JButton("Limpiar");
@@ -162,21 +150,17 @@ public class VentanaRescates extends JFrame {
         add(panelSur, BorderLayout.SOUTH);
     }
 
-    // ============================================================
-    // ACCIONES
-    // ============================================================
+    // ---------- ACCIONES ----------
 
-    /**
-     * Registra un rescate nuevo con los datos del formulario.
-     * Valida campos vacios y codigo duplicado.
-     */
+    // Registra un rescate nuevo. Valida campos vacios y codigo duplicado.
+    // Todo rescate nace con estado "Activo".
     private void registrarRescate() {
         String codigo = campoCodigo.getText().trim();
         String ubicacion = campoUbicacion.getText().trim();
         String descripcion = campoDescripcion.getText().trim();
         String prioridad = (String) comboPrioridad.getSelectedItem();
 
-        // Validacion: campos vacios.
+        // Validacion: campos vacios
         if (codigo.isEmpty() || ubicacion.isEmpty() || descripcion.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Todos los campos son obligatorios.",
@@ -184,7 +168,7 @@ public class VentanaRescates extends JFrame {
             return;
         }
 
-        // Validacion: codigo duplicado.
+        // Validacion: codigo duplicado
         if (sistema.existeRescateConCodigo(codigo)) {
             JOptionPane.showMessageDialog(this,
                     "Ya existe un rescate con el codigo '" + codigo + "'.",
@@ -192,7 +176,7 @@ public class VentanaRescates extends JFrame {
             return;
         }
 
-        // Creamos el rescate. Todo rescate nace con estado "Activo".
+        // Creamos el objeto con fecha actual
         Rescate r = new Rescate(codigo, ubicacion, descripcion,
                 prioridad, "Activo", FechaUtil.ahora());
 
@@ -214,9 +198,7 @@ public class VentanaRescates extends JFrame {
         refrescarTabla();
     }
 
-    /**
-     * Limpia los campos del formulario.
-     */
+    // Limpia los campos del formulario
     private void limpiarFormulario() {
         campoCodigo.setText("");
         campoUbicacion.setText("");
@@ -225,32 +207,28 @@ public class VentanaRescates extends JFrame {
         campoCodigo.requestFocus();
     }
 
-    /**
-     * Refresca la tabla con todos los rescates.
-     */
+    // Refresca la tabla con todos los rescates
     private void refrescarTabla() {
         modeloTabla.actualizar(sistema.getTodosLosRescates());
     }
 
-    /**
-     * Aplica el filtro seleccionado en el combo.
-     */
+    // Aplica el filtro seleccionado en el combo
     private void aplicarFiltro() {
         int filtro = comboFiltro.getSelectedIndex();
         switch (filtro) {
-            case 1: // Solo activos.
+            case 1: // solo activos
                 modeloTabla.actualizar(sistema.getRescatesActivos());
                 break;
-            case 2: // Prioridad Alta.
+            case 2: // prioridad Alta
                 modeloTabla.actualizar(sistema.getRescatesPorPrioridad("Alta"));
                 break;
-            case 3: // Prioridad Media.
+            case 3: // prioridad Media
                 modeloTabla.actualizar(sistema.getRescatesPorPrioridad("Media"));
                 break;
-            case 4: // Prioridad Baja.
+            case 4: // prioridad Baja
                 modeloTabla.actualizar(sistema.getRescatesPorPrioridad("Baja"));
                 break;
-            default: // Todos.
+            default: // todos
                 refrescarTabla();
                 break;
         }
@@ -262,9 +240,7 @@ public class VentanaRescates extends JFrame {
         }
     }
 
-    /**
-     * Marca como "Atendido" el rescate seleccionado en la tabla.
-     */
+    // Marca como "Atendido" el rescate seleccionado
     private void atenderRescate() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {
@@ -276,7 +252,7 @@ public class VentanaRescates extends JFrame {
 
         Rescate r = modeloTabla.getRescateEnFila(fila);
 
-        // Validacion: si ya esta atendido, avisamos.
+        // Si ya esta atendido, avisamos
         if (r.getEstado().equalsIgnoreCase("Atendido")) {
             JOptionPane.showMessageDialog(this,
                     "Este rescate ya fue atendido.",

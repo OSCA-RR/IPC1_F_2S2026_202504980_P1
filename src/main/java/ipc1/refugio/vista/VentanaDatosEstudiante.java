@@ -7,19 +7,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
-/**
- * Ventana informativa con los datos del estudiante y del proyecto.
- *
- * No realiza operaciones sobre el sistema, es solo una pantalla de
- * presentacion que el PDF exige como parte de la interfaz principal.
- */
+// Ventana que muestra los datos del estudiante y del proyecto.
+// No hace operaciones sobre el sistema, solo es informativa.
 public class VentanaDatosEstudiante extends JFrame {
 
-    // ============================================================
-    // DATOS DEL ESTUDIANTE
-    // Edita estos valores con tus datos reales.
-    // ============================================================
-    private static final String NOMBRE_ESTUDIANTE = "Oscar Regino Sequen Tezén"; 
+    // Datos fijos del estudiante y del proyecto
+    private static final String NOMBRE_ESTUDIANTE = "Oscar Regino Sequen Tezén";
     private static final String CARNET            = "202504980";
     private static final String CURSO             = "Introduccion a la Programacion y Computacion 1";
     private static final String SECCION           = "F";
@@ -31,15 +24,17 @@ public class VentanaDatosEstudiante extends JFrame {
         setTitle("Datos del Estudiante");
         setSize(600, 500);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);   // solo cierra esta ventana
         setLayout(new BorderLayout());
 
         inicializarComponentes();
     }
 
+    // Construye la interfaz: titulo arriba, tabla de datos al centro,
+    // boton volver abajo.
     private void inicializarComponentes() {
 
-        // -------- Encabezado --------
+        // ---------- Encabezado ----------
         JLabel encabezado = new JLabel(
                 "Informacion del Proyecto",
                 SwingConstants.CENTER);
@@ -47,7 +42,7 @@ public class VentanaDatosEstudiante extends JFrame {
         encabezado.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         add(encabezado, BorderLayout.NORTH);
 
-        // -------- Cuerpo: tabla de datos --------
+        // ---------- Cuerpo con los datos ----------
         JPanel panelDatos = new JPanel(new GridBagLayout());
         panelDatos.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
 
@@ -57,8 +52,7 @@ public class VentanaDatosEstudiante extends JFrame {
 
         int fila = 0;
 
-        // Cada dato va con una etiqueta en negrita a la izquierda y el
-        // valor a la derecha.
+        // Cada fila tiene la etiqueta a la izquierda y el valor a la derecha
         agregarFila(panelDatos, gbc, fila++, "Nombre completo:", NOMBRE_ESTUDIANTE);
         agregarFila(panelDatos, gbc, fila++, "Carnet:", CARNET);
         agregarFila(panelDatos, gbc, fila++, "Curso:", CURSO);
@@ -70,7 +64,7 @@ public class VentanaDatosEstudiante extends JFrame {
 
         add(panelDatos, BorderLayout.CENTER);
 
-        // -------- Panel inferior: boton volver --------
+        // ---------- Boton volver ----------
         JPanel panelSur = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton botonVolver = new JButton("Volver");
         botonVolver.addActionListener((ActionEvent e) -> dispose());
@@ -78,9 +72,7 @@ public class VentanaDatosEstudiante extends JFrame {
         add(panelSur, BorderLayout.SOUTH);
     }
 
-    /**
-     * Agrega una fila del tipo "Etiqueta: Valor" al panel de datos.
-     */
+    // Agrega una fila con etiqueta en negrita a la izquierda y el valor a la derecha
     private void agregarFila(JPanel panel, GridBagConstraints gbc,
                              int fila, String etiqueta, String valor) {
 
@@ -96,9 +88,7 @@ public class VentanaDatosEstudiante extends JFrame {
         panel.add(labelValor, gbc);
     }
 
-    /**
-     * Agrega la fila del repositorio con un boton que abre el navegador.
-     */
+    // Agrega la fila del repositorio con un boton que abre el navegador
     private void agregarFilaRepositorio(JPanel panel, GridBagConstraints gbc, int fila) {
 
         gbc.gridx = 0;
@@ -114,9 +104,7 @@ public class VentanaDatosEstudiante extends JFrame {
         panel.add(botonRepo, gbc);
     }
 
-    /**
-     * Abre el repositorio de GitHub en el navegador por defecto.
-     */
+    // Abre el repositorio en el navegador por defecto del sistema
     private void abrirRepositorio() {
         try {
             if (Desktop.isDesktopSupported()) {
